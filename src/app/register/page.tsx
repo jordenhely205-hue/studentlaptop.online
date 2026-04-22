@@ -17,6 +17,7 @@ export default function Register() {
     phone: "",
     password: "",
     boardOrUniversity: "",
+    customInstitute: "",
     score: "", // Can be CGPA or Marks/Percentage
     otp: ""
   });
