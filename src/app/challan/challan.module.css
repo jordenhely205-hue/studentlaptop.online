@@ -1,0 +1,186 @@
+.wrapper {
+  min-height: 100vh;
+  background-color: #f1f5f9;
+}
+
+.pageHeader {
+  padding: 1rem 0;
+  background-color: white;
+  border-bottom: 1px solid var(--border);
+}
+
+.mainContent {
+  padding: 2rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* Print Area (simulates the A4 yellowish paper) */
+.printArea {
+  background-color: #f7f5e8; /* yellowish paper color from screenshot */
+  width: 100%;
+  max-width: 850px;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.scissorLine {
+  text-align: center;
+  color: #64748b;
+  margin: 2rem 0;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+}
+
+/* Individual Challan Copy */
+.challanBox {
+  border: 1px solid #ccc;
+  background: transparent;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.logoArea {
+  font-weight: bold;
+  color: #1e3a8a; /* Dark Blue */
+  font-size: 1.2rem;
+}
+
+.metaArea {
+  text-align: right;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.titleBar {
+  background-color: #1e3a8a; /* Dark Blue */
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.subTitleBar {
+  background-color: #16a34a; /* Green */
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 1rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.copyType {
+  background: white;
+  color: black;
+  padding: 0 0.5rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.detailsSplit {
+  display: flex;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.tableBlock {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableBlock td {
+  border: 1px solid #ccc;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.labelCell {
+  background-color: #1f6e43; /* Dark green matching image */
+  color: white;
+  font-weight: bold;
+  width: 35%;
+}
+
+.valueCell {
+  background-color: transparent;
+  font-weight: bold;
+}
+
+.feeBlock {
+  min-width: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tillBox {
+  border: 1.5px solid #b91c1c; /* Dark red border */
+  border-radius: 8px;
+  padding: 0.25rem 1rem;
+  text-align: right;
+  background: white;
+  align-self: flex-end;
+  margin-top: 0.5rem;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+}
+
+.tillBox span {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.tillBox strong {
+  font-size: 1.8rem;
+  color: #b91c1c;
+  display: block;
+}
+
+.footerSplit {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  border-top: 1px solid #ccc;
+}
+
+.instructions {
+  font-size: 0.8rem;
+}
+
+.instructions ol {
+  margin-top: 0.25rem;
+  padding-left: 1rem;
+}
+
+.signatures {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.sigLine {
+  border-top: 1px solid black;
+  padding-top: 0.25rem;
+  font-size: 0.8rem;
+  text-align: center;
+  width: 150px;
+}
+
+@media print {
+  .pageHeader {
+    display: none;
+  }
+  .wrapper {
+    background-color: white;
+  }
+  .printArea {
+    box-shadow: none;
+    padding: 0;
+  }
+}

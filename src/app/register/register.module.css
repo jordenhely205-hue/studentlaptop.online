@@ -1,0 +1,65 @@
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface);
+}
+
+.header {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.mainContent {
+  flex: 1;
+}
+
+.label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.progressContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.stepIndicator {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.stepIndicator.active {
+  background-color: var(--primary);
+  color: white;
+}
+
+.stepLine {
+  flex: 1;
+  height: 3px;
+  background-color: #e2e8f0;
+  margin: 0 10px;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.stepLine.activeLine {
+  background-color: var(--primary);
+}
