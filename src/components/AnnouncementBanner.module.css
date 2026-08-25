@@ -1,0 +1,45 @@
+.bannerContainer {
+  background-color: #dc2626;
+  color: #ffffff;
+  padding: 0.6rem 0;
+  width: 100%%;
+  overflow: hidden;
+  position: relative;
+  z-index: 50;
+}
+
+.marquee {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 25s linear infinite;
+}
+
+.marquee:hover {
+  animation-play-state: paused;
+}
+
+.notice {
+  padding-left: 2rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-right: 1rem;
+}
+
+@keyframes marquee {
+  0%% { transform: translateX(100%%); }
+  100%% { transform: translateX(-100%%); }
+}
+
+@media (max-width: 640px) {
+  .notice {
+    font-size: 0.8rem;
+  }
+  .marquee {
+    animation: marquee 15s linear infinite;
+  }
+}
