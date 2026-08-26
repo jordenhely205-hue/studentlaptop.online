@@ -2,6 +2,7 @@
   background-color: #dc2626 !important;
   background: #dc2626 !important;
   color: #ffffff !important;
+  font-weight: 700 !important;
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
@@ -18,12 +19,14 @@
   display: flex;
   width: 100%;
   overflow: hidden;
+  font-weight: 700 !important;
 }
 
 .marqueeTrack {
   display: flex;
   flex-shrink: 0;
   align-items: center;
+  font-weight: 700 !important;
   animation: marquee 35s linear infinite;
   will-change: transform;
 }
@@ -38,15 +41,17 @@
   align-items: center;
   padding: 0 3rem;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700 !important;
   color: #ffffff !important;
   line-height: 1.5;
   white-space: nowrap;
 }
 
 .item span,
-.item strong {
+.item strong,
+.item * {
   color: #ffffff !important;
+  font-weight: 700 !important;
 }
 
 .icon {
@@ -80,6 +85,7 @@
   .item {
     padding: 0 1.5rem;
     font-size: 0.8125rem;
+    font-weight: 700 !important;
   }
 
   .icon {
