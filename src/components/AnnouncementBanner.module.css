@@ -1,28 +1,85 @@
-.bannerContainer {
+﻿.bannerContainer {
   background-color: #dc2626;
   color: #ffffff;
-  padding: 0.5rem 0;
-  width: 100%%;
+  padding: 0.55rem 0;
+  width: 100%;
   overflow: hidden;
   white-space: nowrap;
   position: relative;
   z-index: 50;
   display: flex;
+  align-items: center;
+  user-select: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
-.marquee {
-  display: inline-block;
-  padding-left: 100%%;
-  animation: marquee 20s linear infinite;
-  font-size: 0.9rem;
-  font-weight: 500;
+.tickerTrack {
+  display: flex;
+  width: max-content;
+  animation: scrollMarquee 32s linear infinite;
+  will-change: transform;
 }
 
-.marquee:hover {
+.bannerContainer:hover .tickerTrack,
+.tickerTrack:hover {
   animation-play-state: paused;
 }
 
-@keyframes marquee {
-  0%% { transform: translate(0, 0); }
-  100%% { transform: translate(-100%%, 0); }
+.tickerItem {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2.5rem;
+  font-size: 0.925rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+}
+
+.iconWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.noticeLabel {
+  font-weight: 700;
+  color: #fef08a;
+  margin-right: 0.35rem;
+}
+
+.dateHighlight {
+  font-weight: 700;
+  color: #fef08a;
+}
+
+@keyframes scrollMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 768px) {
+  .bannerContainer {
+    padding: 0.45rem 0;
+  }
+
+  .tickerTrack {
+    animation-duration: 24s;
+  }
+
+  .tickerItem {
+    padding: 0 1.25rem;
+    font-size: 0.825rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tickerTrack {
+    animation-play-state: paused;
+  }
 }
