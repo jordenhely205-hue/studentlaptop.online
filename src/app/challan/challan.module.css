@@ -12,16 +12,48 @@
 .mainContent {
   padding: 2rem 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Status Banner */
+.statusBanner {
+  width: 100%;
+  max-width: 850px;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statusPending {
+  background-color: #fef3c7;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.statusReview {
+  background-color: #e0f2fe;
+  border: 1px solid #bae6fd;
+  color: #0369a1;
+}
+
+.statusVerified {
+  background-color: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
 }
 
 /* Print Area (simulates the A4 yellowish paper) */
 .printArea {
-  background-color: #f7f5e8; /* yellowish paper color from screenshot */
+  background-color: #f7f5e8; /* yellowish paper color */
   width: 100%;
   max-width: 850px;
   padding: 2rem;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-radius: 4px;
 }
 
 .scissorLine {
@@ -34,26 +66,29 @@
 
 /* Individual Challan Copy */
 .challanBox {
-  border: 1px solid #ccc;
+  border: 1.5px solid #334155;
   background: transparent;
+  padding: 0.5rem;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
 }
 
 .logoArea {
   font-weight: bold;
   color: #1e3a8a; /* Dark Blue */
-  font-size: 1.2rem;
+  font-size: 1.15rem;
+  line-height: 1.3;
 }
 
 .metaArea {
   text-align: right;
   font-size: 0.85rem;
-  color: #333;
+  color: #1e293b;
+  line-height: 1.4;
 }
 
 .titleBar {
@@ -62,7 +97,8 @@
   font-weight: bold;
   text-align: center;
   padding: 0.5rem;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
 }
 
 .subTitleBar {
@@ -70,17 +106,18 @@
   color: white;
   display: flex;
   justify-content: space-between;
-  padding: 0.25rem 1rem;
-  font-size: 0.9rem;
+  align-items: center;
+  padding: 0.35rem 1rem;
+  font-size: 0.85rem;
   font-weight: bold;
 }
 
 .copyType {
   background: white;
-  color: black;
-  padding: 0 0.5rem;
+  color: #166534;
+  padding: 0.15rem 0.5rem;
   border-radius: 3px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .detailsSplit {
@@ -95,13 +132,13 @@
 }
 
 .tableBlock td {
-  border: 1px solid #ccc;
-  padding: 0.25rem 0.5rem;
+  border: 1px solid #94a3b8;
+  padding: 0.35rem 0.6rem;
   font-size: 0.85rem;
 }
 
 .labelCell {
-  background-color: #1f6e43; /* Dark green matching image */
+  background-color: #1f6e43; /* Dark green matching national challans */
   color: white;
   font-weight: bold;
   width: 35%;
@@ -109,78 +146,104 @@
 
 .valueCell {
   background-color: transparent;
-  font-weight: bold;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .feeBlock {
-  min-width: 350px;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.tillBox {
-  border: 1.5px solid #b91c1c; /* Dark red border */
-  border-radius: 8px;
-  padding: 0.25rem 1rem;
-  text-align: right;
-  background: white;
-  align-self: flex-end;
+.psidHighlightBox {
+  border: 2px solid #b91c1c; /* National Banking Red */
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  background: #ffffff;
   margin-top: 0.5rem;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.tillBox span {
+.psidHighlightBox span {
   font-size: 0.75rem;
-  font-weight: bold;
-  color: #333;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
 }
 
-.tillBox strong {
-  font-size: 1.8rem;
+.psidHighlightBox strong {
+  font-size: 1.6rem;
   color: #b91c1c;
   display: block;
+  letter-spacing: 2px;
+  font-family: monospace;
 }
 
 .footerSplit {
   display: flex;
   justify-content: space-between;
   padding: 1rem;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #94a3b8;
 }
 
 .instructions {
   font-size: 0.8rem;
+  color: #1e293b;
+  max-width: 60%;
 }
 
 .instructions ol {
-  margin-top: 0.25rem;
-  padding-left: 1rem;
+  padding-left: 1.2rem;
+  margin: 0.4rem 0 0 0;
+  line-height: 1.4;
 }
 
 .signatures {
   display: flex;
-  gap: 1rem;
-  align-items: flex-end;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  min-width: 200px;
 }
 
 .sigLine {
-  border-top: 1px solid black;
-  padding-top: 0.25rem;
-  font-size: 0.8rem;
+  border-top: 1px dashed #475569;
   text-align: center;
-  width: 150px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  padding-top: 0.25rem;
+}
+
+/* Payment Verification Card */
+.verificationCard {
+  width: 100%;
+  max-width: 850px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
 }
 
 @media print {
-  .pageHeader {
-    display: none;
+  body {
+    background: white;
   }
-  .wrapper {
-    background-color: white;
+  .pageHeader, .statusBanner, .verificationCard {
+    display: none !important;
+  }
+  .mainContent {
+    padding: 0 !important;
   }
   .printArea {
-    box-shadow: none;
-    padding: 0;
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
