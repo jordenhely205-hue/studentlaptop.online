@@ -66,21 +66,21 @@ model Student {
 }
 
 model Challan {
-  id              String            @id @default(cuid())
-  psid            String            @unique
-  amount          Float             @default(1500.00)
+  id              String   @id @default(cuid())
+  psid            String   @unique
+  amount          Float    @default(1500.00)
   dueDate         DateTime
-  isPaid          Boolean           @default(false)
-  transactionId   String?           @unique
+  isPaid          Boolean  @default(false)
+  transactionId   String?  @unique
   receiptUrl      String?
-  verifiedByAdmin Boolean           @default(false)
+  verifiedByAdmin Boolean  @default(false)
 
   // Relation to Student
-  studentId       String            @unique
-  student         Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId       String   @unique
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([psid])
   @@index([transactionId])
