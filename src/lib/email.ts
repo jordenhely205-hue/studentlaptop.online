@@ -1,28 +1,61 @@
 import nodemailer from "nodemailer";
 
 // Zoho Mail Transactional SMTP Configuration (noreply@studentlaptop.online)
-// Configurable via environment variables with direct Zoho Mail production defaults
-const SMTP_HOST = process.env.SMTP_HOST || "smtppro.zoho.com";
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || "465", 10);
-const SMTP_SECURE = SMTP_PORT === 465;
-const SMTP_USER = process.env.SMTP_USER || "noreply@studentlaptop.online";
-const SMTP_PASS = process.env.SMTP_PASS || process.env.ZOHO_PASSWORD || process.env.EMAIL_PASSWORD || "";
-const SMTP_FROM = process.env.SMTP_FROM || `"STUDENT LAPTOP ONLINE" <noreply@studentlaptop.online>`;
+// Configurable via environment variables with robust fallback resolution
+export function getSmtpConfig() {
+  const host = (process.env.SMTP_HOST || "smtppro.zoho.com").trim();
+  const port = parseInt(process.env.SMTP_PORT || "465", 10);
+  const secure = port === 465;
+  const user = (
+    process.env.SMTP_USER ||
+    process.env.SMTP_USERNAME ||
+    process.env.ZOHO_USER ||
+    process.env.EMAIL_USER ||
+    "noreply@studentlaptop.online"
+  ).trim();
+  const pass = (
+    process.env.SMTP_PASS ||
+    process.env.SMTP_PASSWORD ||
+    process.env.ZOHO_PASSWORD ||
+    process.env.ZOHO_PASS ||
+    process.env.EMAIL_PASSWORD ||
+    process.env.MAIL_PASSWORD ||
+    ""
+  ).trim();
+  const from = (
+    process.env.SMTP_FROM ||
+    `"STUDENT LAPTOP ONLINE" <${user}>`
+  ).trim();
+
+  return { host, port, secure, user, pass, from };
+}
 
 export function getTransporter() {
-  if (!SMTP_PASS) {
-    // Return null if password is not configured yet
+  const { host, port, secure, user, pass } = getSmtpConfig();
+
+  if (!pass) {
+    console.error(
+      "[Zoho SMTP] ERROR: SMTP password is not set! Please define SMTP_PASS or ZOHO_PASSWORD in your environment variables."
+    );
     return null;
   }
+
   return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_SECURE, // true for 465 SSL
+    host,
+    port,
+    secure, // true for 465 SSL
     auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
+      user,
+      pass,
     },
-    // Production anti-spam headers
+    connectionTimeout: 10000, // 10s connection timeout for serverless
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+    tls: {
+      rejectUnauthorized: false, // Prevents SSL handshaking rejection in proxy/serverless environments
+    },
+    debug: process.env.NODE_ENV !== "production" || process.env.SMTP_DEBUG === "true",
+    logger: false,
     headers: {
       "X-Entity-Ref-ID": `SLO-${Date.now()}`,
     },
@@ -30,6 +63,8 @@ export function getTransporter() {
 }
 
 export async function sendOtpEmail(toEmail: string, studentName: string, otpCode: string) {
+  const { from, host, port, user, pass } = getSmtpConfig();
+
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -81,9 +116,9 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
     </html>
   `;
 
-  const textContent = `Dear ${studentName || "Applicant"},\n\nYour OTP Verification Code for STUDENT LAPTOP ONLINE is: ${otpCode}\n\nThis code is valid for 10 minutes. Do not share it with anyone.\n\nWebsite: https://www.studentlaptop.online`;
+  const textContent = `Dear ${studentName || "Applicant"},\n\nYour OTP Verification Code for STUDENT LAPTOP ONLINE is: ${otpCode}\n\nThis code is valid for 10 minutes. Do not share it with anyone.\n\nWebsite: https://www.studentlaptop.online\nSupport: info@studentlaptop.online`;
 
-  // Try sending via Resend API if RESEND_API_KEY is provided
+  // 1. Try Resend API if RESEND_API_KEY is configured
   if (process.env.RESEND_API_KEY) {
     try {
       const res = await fetch("https://api.resend.com/emails", {
@@ -93,7 +128,7 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: SMTP_FROM,
+          from,
           to: toEmail,
           subject: `${otpCode} is your STUDENT LAPTOP ONLINE verification code`,
           html: htmlContent,
@@ -101,19 +136,23 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
         }),
       });
       if (res.ok) {
+        console.log(`[Resend API] Successfully sent OTP to ${toEmail}`);
         return { success: true, provider: "resend" };
+      } else {
+        const errorText = await res.text();
+        console.warn(`[Resend API Error] ${res.status}: ${errorText}`);
       }
     } catch (resendErr) {
-      console.warn("Resend API failed, falling back to SMTP:", resendErr);
+      console.warn("[Resend API failed, falling back to Zoho SMTP]:", resendErr);
     }
   }
 
-  // Send via Nodemailer SMTP (Hostinger / cPanel / Google Workspace)
+  // 2. Send via Zoho Mail SMTP (smtppro.zoho.com:465)
   const transporter = getTransporter();
   if (transporter) {
     try {
-      await transporter.sendMail({
-        from: SMTP_FROM,
+      const info = await transporter.sendMail({
+        from,
         to: toEmail,
         subject: `${otpCode} is your STUDENT LAPTOP ONLINE verification code`,
         text: textContent,
@@ -123,14 +162,34 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
           Importance: "high",
         },
       });
-      return { success: true, provider: "smtp" };
-    } catch (smtpErr) {
-      console.error("SMTP sending error:", smtpErr);
-      return { success: false, error: smtpErr };
+      console.log(`[Zoho SMTP] Successfully sent OTP to ${toEmail}. MessageId: ${info.messageId}`);
+      return { success: true, provider: "smtp", messageId: info.messageId };
+    } catch (smtpErr: any) {
+      console.error("[Zoho SMTP Error] Failed to send email:", {
+        host,
+        port,
+        user,
+        recipient: toEmail,
+        code: smtpErr?.code,
+        command: smtpErr?.command,
+        response: smtpErr?.response,
+        message: smtpErr?.message,
+      });
+      return {
+        success: false,
+        error: smtpErr?.message || "Zoho SMTP dispatch failed",
+        provider: "smtp",
+      };
     }
   }
 
-  // If SMTP password is not yet entered in environment, log and return graceful response
-  console.log(`[SMTP Not Configured] Generated OTP for ${toEmail}: ${otpCode}`);
-  return { success: true, provider: "fallback", note: "SMTP_PASS not set, OTP saved to DB" };
+  // 3. Fallback when SMTP_PASS is missing
+  console.warn(
+    `[Zoho SMTP Not Configured] SMTP password is missing. Could not deliver OTP email to ${toEmail}.`
+  );
+  return {
+    success: false,
+    error: "SMTP credentials not configured on server (SMTP_PASS missing).",
+    provider: "none",
+  };
 }

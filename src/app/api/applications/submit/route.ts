@@ -61,41 +61,60 @@ export async function POST(request: NextRequest) {
       const postgres = (await import("postgres")).default;
       const sql = postgres(NEON_DB_URL, { ssl: "require", max: 1 });
 
+      // 1. Strict Duplicate CNIC Check
+      const existing = await sql`
+        SELECT "id", "applicationNo" 
+        FROM "students" 
+        WHERE "cnic" = ${cleanCnic} 
+        LIMIT 1
+      `;
+
+      if (existing && existing.length > 0) {
+        await sql.end({ timeout: 2 });
+        return NextResponse.json(
+          { error: "An application with this CNIC already exists." },
+          { status: 409 }
+        );
+      }
+
       const studentId = `std_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       const challanId = `chl_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       const now = new Date();
       const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
-      // Upsert Student
-      await sql`
-        INSERT INTO "students" (
-          "id", "applicationNo", "cnic", "fullName", "fatherName", "dateOfBirth", "gender", "mobileNo", "email",
-          "province", "district", "tehsil", "currentAddress", "degreeLevel", "instituteName", "boardUniversity",
-          "rollNumber", "passingYear", "totalMarks", "obtainedMarks", "percentage", "status", "createdAt", "updatedAt",
-          "matricRollNumber", "matricBoard", "matricInstitute", "matricPassingYear", "matricTotalMarks", "matricObtainedMarks", "matricPercentage",
-          "interRollNumber", "interBoard", "interInstitute", "interPassingYear", "interTotalMarks", "interObtainedMarks", "interPercentage",
-          "gradUniversity", "gradRollNumber", "gradProgram", "gradScore"
-        )
-        VALUES (
-          ${studentId}, ${appNo}, ${cleanCnic}, ${name.trim()}, ${fatherName.trim()}, ${now}, 'Unspecified', ${phone || 'N/A'}, ${email || null},
-          'Punjab', 'General', 'General', 'Pakistan', ${dbDegreeLevel}, ${primaryInst}, ${primaryBoard},
-          ${primaryRoll}, ${primaryYear}, ${primaryTotal}, ${primaryObtained}, ${primaryPct}, 'PAYMENT_PENDING', ${now}, ${now},
-          ${matricRollNumber || null}, ${matricBoard || null}, ${matricInstitute || null}, ${matricPassingYear || null}, ${matricTotalMarks || null}, ${matricObtainedMarks || null}, ${matricPercentage || null},
-          ${interRollNumber || null}, ${interBoard || null}, ${interInstitute || null}, ${interPassingYear || null}, ${interTotalMarks || null}, ${interObtainedMarks || null}, ${interPercentage || null},
-          ${gradUniversity || null}, ${gradRollNumber || null}, ${gradProgram || null}, ${gradScore || null}
-        )
-        ON CONFLICT ("cnic") DO UPDATE SET
-          "fullName" = EXCLUDED."fullName",
-          "fatherName" = EXCLUDED."fatherName",
-          "mobileNo" = EXCLUDED."mobileNo",
-          "email" = EXCLUDED."email",
-          "degreeLevel" = EXCLUDED."degreeLevel",
-          "instituteName" = EXCLUDED."instituteName",
-          "boardUniversity" = EXCLUDED."boardUniversity",
-          "updatedAt" = ${now}
-      `;
+      // 2. Insert Student (Strict insert without overwriting existing records)
+      try {
+        await sql`
+          INSERT INTO "students" (
+            "id", "applicationNo", "cnic", "fullName", "fatherName", "dateOfBirth", "gender", "mobileNo", "email",
+            "province", "district", "tehsil", "currentAddress", "degreeLevel", "instituteName", "boardUniversity",
+            "rollNumber", "passingYear", "totalMarks", "obtainedMarks", "percentage", "status", "createdAt", "updatedAt",
+            "matricRollNumber", "matricBoard", "matricInstitute", "matricPassingYear", "matricTotalMarks", "matricObtainedMarks", "matricPercentage",
+            "interRollNumber", "interBoard", "interInstitute", "interPassingYear", "interTotalMarks", "interObtainedMarks", "interPercentage",
+            "gradUniversity", "gradRollNumber", "gradProgram", "gradScore"
+          )
+          VALUES (
+            ${studentId}, ${appNo}, ${cleanCnic}, ${name.trim()}, ${fatherName.trim()}, ${now}, 'Unspecified', ${phone || 'N/A'}, ${email || null},
+            'Punjab', 'General', 'General', 'Pakistan', ${dbDegreeLevel}, ${primaryInst}, ${primaryBoard},
+            ${primaryRoll}, ${primaryYear}, ${primaryTotal}, ${primaryObtained}, ${primaryPct}, 'PAYMENT_PENDING', ${now}, ${now},
+            ${matricRollNumber || null}, ${matricBoard || null}, ${matricInstitute || null}, ${matricPassingYear || null}, ${matricTotalMarks || null}, ${matricObtainedMarks || null}, ${matricPercentage || null},
+            ${interRollNumber || null}, ${interBoard || null}, ${interInstitute || null}, ${interPassingYear || null}, ${interTotalMarks || null}, ${interObtainedMarks || null}, ${interPercentage || null},
+            ${gradUniversity || null}, ${gradRollNumber || null}, ${gradProgram || null}, ${gradScore || null}
+          )
+        `;
+      } catch (insertErr: any) {
+        // Handle unique constraint violation (code 23505)
+        if (insertErr?.code === "23505" || insertErr?.message?.includes("unique")) {
+          await sql.end({ timeout: 2 });
+          return NextResponse.json(
+            { error: "An application with this CNIC already exists." },
+            { status: 409 }
+          );
+        }
+        throw insertErr;
+      }
 
-      // Insert Challan
+      // 3. Insert Challan Voucher Record
       await sql`
         INSERT INTO "challans" (
           "id", "psid", "amount", "dueDate", "isPaid", "verifiedByAdmin", "studentId", "createdAt", "updatedAt"
@@ -103,14 +122,21 @@ export async function POST(request: NextRequest) {
         VALUES (
           ${challanId}, ${psid}, 475.00, ${dueDate}, false, false, ${studentId}, ${now}, ${now}
         )
-        ON CONFLICT ("studentId") DO UPDATE SET
-          "amount" = 475.00,
-          "updatedAt" = ${now}
       `;
 
       await sql.end({ timeout: 2 });
-    } catch (dbErr) {
-      console.warn("Neon DB upsert error:", dbErr);
+    } catch (dbErr: any) {
+      console.error("Neon DB application submission error:", dbErr);
+      if (dbErr?.code === "23505" || dbErr?.message?.includes("unique")) {
+        return NextResponse.json(
+          { error: "An application with this CNIC already exists." },
+          { status: 409 }
+        );
+      }
+      return NextResponse.json(
+        { error: "Failed to store application in database", details: dbErr?.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

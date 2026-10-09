@@ -57,6 +57,7 @@ export default function Register() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [cnicError, setCnicError] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [otpResendCooldown, setOtpResendCooldown] = useState(0);
@@ -68,6 +69,7 @@ export default function Register() {
 
     // Auto format CNIC
     if (name === "cnic") {
+      setCnicError("");
       let formatted = value.replace(/\D/g, "");
       if (formatted.length > 13) formatted = formatted.slice(0, 13);
       if (formatted.length > 5 && formatted.length <= 12)
@@ -123,17 +125,39 @@ export default function Register() {
     });
   };
 
-  const handleNextFromStep1 = (e: React.FormEvent) => {
+  const handleNextFromStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCnicError("");
+
     if (formData.cnic.length !== 15) {
-      alert("Please enter a valid 13-digit CNIC / B-Form Number (e.g. 42101-1234567-1).");
+      setCnicError("Please enter a valid 13-digit CNIC / B-Form Number (e.g. 42101-1234567-1).");
       return;
     }
     if (!formData.level) {
       alert("Please select your academic level (Matric, Inter, or University).");
       return;
     }
-    setStep(2);
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/check-cnic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cnic: formData.cnic }),
+      });
+      const resData = await res.json();
+      setLoading(false);
+
+      if (!res.ok || resData.exists) {
+        const errMsg = resData.error || "An application with this CNIC already exists.";
+        setCnicError(errMsg);
+        return;
+      }
+      setStep(2);
+    } catch {
+      setLoading(false);
+      setStep(2);
+    }
   };
 
   const handleNextFromStep2 = (e: React.FormEvent) => {
@@ -308,9 +332,9 @@ export default function Register() {
       });
 
       const verifyData = await verifyRes.json();
-      if (!verifyRes.ok && !verifyData.valid) {
+      if (!verifyRes.ok || !verifyData.verified) {
         setLoading(false);
-        setOtpError(verifyData.error || "Invalid or expired OTP code. Please try again.");
+        setOtpError(verifyData.error || "Invalid or expired OTP code. Please enter the valid code sent to your email.");
         return;
       }
 
@@ -322,6 +346,11 @@ export default function Register() {
       });
 
       const submitData = await submitRes.json();
+      if (!submitRes.ok) {
+        setLoading(false);
+        setOtpError(submitData.error || "Failed to submit application.");
+        return;
+      }
 
       // 3. Store candidate voucher data in localStorage
       if (typeof window !== "undefined") {
@@ -340,22 +369,9 @@ export default function Register() {
       setLoading(false);
       router.push("/challan");
     } catch (err: any) {
-      console.warn("Error submitting application:", err);
-      // Fallback redirect with stored candidate payload
-      if (typeof window !== "undefined") {
-        const candidatePayload = {
-          ...formData,
-          applicationNo: `SLO-${Date.now().toString().slice(-6)}`,
-          psid: "984703000",
-          feeAmount: 475,
-          feeInWords: "Four Hundred Seventy Five Rupees Only",
-          status: "Payment Pending",
-          tillId: "984703000",
-        };
-        localStorage.setItem("challanData", JSON.stringify(candidatePayload));
-      }
+      console.error("Error submitting application:", err);
       setLoading(false);
-      router.push("/challan");
+      setOtpError(err?.message || "An error occurred during submission. Please try again.");
     }
   };
 
@@ -457,12 +473,30 @@ export default function Register() {
                 </div>
               </div>
 
+              {cnicError && (
+                <div
+                  style={{
+                    backgroundColor: "#fef2f2",
+                    border: "1.5px solid #fecaca",
+                    color: "#b91c1c",
+                    padding: "0.85rem 1rem",
+                    borderRadius: "0.5rem",
+                    marginBottom: "1.25rem",
+                    fontSize: "0.9rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  ⚠️ {cnicError}
+                </div>
+              )}
+
               <button
                 type="submit"
                 className="btn btn-primary"
+                disabled={loading}
                 style={{ width: "100%", padding: "0.85rem", display: "flex", gap: "0.5rem", justifyContent: "center" }}
               >
-                Continue to Personal Profile <ArrowRight size={18} />
+                {loading ? "Checking CNIC..." : <>Continue to Personal Profile <ArrowRight size={18} /></>}
               </button>
             </form>
           )}

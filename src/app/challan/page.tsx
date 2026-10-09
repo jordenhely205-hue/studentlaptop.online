@@ -353,7 +353,7 @@ export default function ChallanPage() {
                   </table>
                 </div>
 
-                {/* Right: Fee Payable, Till ID & Embedded QR Scanner */}
+                {/* Right: Fee Payable & Till ID */}
                 <div className={styles.feeBlock}>
                   <table className={styles.tableBlock}>
                     <tbody>
@@ -408,10 +408,29 @@ export default function ChallanPage() {
                       )}
                     </button>
                   </div>
+                </div>
 
-                  {/* Embedded QR Scanner Code */}
-                  <div className={styles.qrVoucherBox}>
-                    <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#1e3a8a", marginBottom: "0.35rem" }}>
+              </div>
+
+              {/* Side-by-Side: Guidelines (Left) & QR Code Card (Right) */}
+              <div className={styles.guidelinesAndQrRow}>
+                {/* Left Side: Official Payment Guidelines */}
+                <div className={styles.guidelinesCol}>
+                  <div style={{ fontWeight: 800, fontSize: "0.9rem", color: "#1e3a8a", marginBottom: "0.5rem" }}>
+                    Official Payment Guidelines:
+                  </div>
+                  <ol className={styles.guidelinesList}>
+                    <li>Pay fee via JazzCash / EasyPaisa Till ID: <strong>984703000</strong> or by scanning the QR code.</li>
+                    <li>Payable Amount: <strong>Rs. 475/-</strong> (Four Hundred Seventy Five Rupees Only).</li>
+                    <li>Retain the Transaction ID (TID) from your JazzCash / EasyPaisa confirmation SMS.</li>
+                    <li>Submit the TID and payment screenshot below to confirm your application instantly.</li>
+                  </ol>
+                </div>
+
+                {/* Right Side: Scan QR via JazzCash / EasyPaisa Card */}
+                <div className={styles.qrCol}>
+                  <div className={styles.qrCard}>
+                    <div style={{ fontSize: "0.8rem", fontWeight: 800, color: "#1e3a8a", marginBottom: "0.35rem" }}>
                       Scan QR via JazzCash / EasyPaisa
                     </div>
                     <Image
@@ -419,30 +438,22 @@ export default function ChallanPage() {
                       alt="Payment QR Code Scanner"
                       width={130}
                       height={130}
-                      style={{ display: "block", borderRadius: "4px", border: "1px solid #cbd5e1" }}
+                      style={{ display: "block", borderRadius: "6px", border: "1px solid #cbd5e1" }}
                       priority
                     />
-                    <span style={{ fontSize: "0.7rem", color: "#64748b", marginTop: "0.25rem", textAlign: "center" }}>
+                    <span style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "0.35rem", fontWeight: 600 }}>
                       Fee: Rs. 475/- (Non-Refundable)
                     </span>
                   </div>
                 </div>
-
               </div>
 
-              {/* Instructions and Signatures Footer */}
-              <div className={styles.footerSplit}>
-                <div className={styles.instructions}>
-                  <strong>Official Payment Guidelines:</strong>
-                  <ol>
-                    <li>Pay fee via JazzCash / EasyPaisa Till ID: <strong>984703000</strong> or by scanning the QR code.</li>
-                    <li>Payable Amount: <strong>Rs. 475/-</strong> (Four Hundred Seventy Five Rupees Only).</li>
-                    <li>Retain the Transaction ID (TID) from your JazzCash / EasyPaisa confirmation SMS.</li>
-                    <li>Submit the TID and payment screenshot below to confirm your application instantly.</li>
-                  </ol>
-                </div>
-                <div className={styles.signatures}>
+              {/* Bottom Signatures (Left: Applicant, Right: Bank Stamp) */}
+              <div className={styles.signaturesFooter}>
+                <div className={styles.sigBlock}>
                   <div className={styles.sigLine}>Applicant / Depositor Signature</div>
+                </div>
+                <div className={styles.sigBlock} style={{ justifyContent: "flex-end" }}>
                   <div className={styles.sigLine}>Authorized Officer / Bank Stamp</div>
                 </div>
               </div>

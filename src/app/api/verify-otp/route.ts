@@ -16,12 +16,15 @@ export async function POST(request: NextRequest) {
     const cleanOtp = otp.toString().trim();
     const cleanEmail = email.toLowerCase().trim();
 
-    // Universal bypass for demo/testing fallback
-    if (cleanOtp === "123456") {
-      return NextResponse.json({ success: true, verified: true });
+    // Strict validation: Must be exactly 6 digits
+    if (!/^\d{6}$/.test(cleanOtp)) {
+      return NextResponse.json(
+        { error: "Invalid verification code format. Must be a 6-digit number." },
+        { status: 400 }
+      );
     }
 
-    // Query Neon PostgreSQL
+    // Query Neon PostgreSQL for matching OTP
     try {
       const postgres = (await import("postgres")).default;
       const sql = postgres(NEON_DB_URL, { ssl: "require", max: 1 });
@@ -38,18 +41,32 @@ export async function POST(request: NextRequest) {
 
       if (records && records.length > 0) {
         const record = records[0];
-        if (new Date(record.expiresAt) > new Date()) {
-          return NextResponse.json({ success: true, verified: true });
+        const now = new Date();
+        const expiresAt = new Date(record.expiresAt);
+
+        if (expiresAt > now) {
+          return NextResponse.json({ success: true, verified: true, valid: true });
         } else {
-          return NextResponse.json({ error: "OTP code has expired. Please request a new one." }, { status: 400 });
+          return NextResponse.json(
+            { error: "OTP code has expired. Please request a new one." },
+            { status: 400 }
+          );
         }
       }
     } catch (dbErr) {
-      console.warn("DB query for OTP verification failed:", dbErr);
+      console.error("Neon DB query for OTP verification failed:", dbErr);
+      return NextResponse.json(
+        { error: "Database error during OTP verification. Please try again." },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ error: "Invalid verification code. Please check your email or re-send code." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid verification code. Please check your email or request a new code." },
+      { status: 400 }
+    );
   } catch (error: any) {
+    console.error("Error in verify-otp API:", error);
     return NextResponse.json(
       { error: "Verification failed", details: error?.message },
       { status: 500 }

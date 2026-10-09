@@ -14,6 +14,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "A valid email address is required" }, { status: 400 });
     }
 
+    const cleanEmail = email.toLowerCase().trim();
+
     // Generate cryptographically secure 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -26,7 +28,7 @@ export async function POST(request: NextRequest) {
 
       await sql`
         INSERT INTO "otp_verifications" ("id", "email", "otp", "expiresAt")
-        VALUES (${recordId}, ${email.toLowerCase().trim()}, ${otp}, ${expiresAt})
+        VALUES (${recordId}, ${cleanEmail}, ${otp}, ${expiresAt})
       `;
 
       await sql.end({ timeout: 2 });
@@ -34,12 +36,34 @@ export async function POST(request: NextRequest) {
       console.warn("Could not save OTP to DB:", dbErr);
     }
 
-    // Send via domain email (Hostinger SMTP or Resend)
-    const emailResult = await sendOtpEmail(email.trim(), name || "Applicant", otp);
+    // Send via Zoho Mail SMTP / Resend
+    const emailResult = await sendOtpEmail(cleanEmail, name || "Applicant", otp);
+
+    if (!emailResult.success) {
+      console.error("[send-otp API] Email dispatch failed:", emailResult.error);
+      
+      // If running locally in development without SMTP_PASS, allow testing with logged OTP
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`[DEV MODE ONLY] Generated OTP for ${cleanEmail}: ${otp}`);
+        return NextResponse.json({
+          success: true,
+          message: `Development OTP generated: ${otp}`,
+          provider: "development",
+        });
+      }
+
+      return NextResponse.json(
+        {
+          error: "Failed to dispatch verification OTP to your email address.",
+          details: emailResult.error,
+        },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: `Verification OTP has been sent to ${email}`,
+      message: `Verification OTP has been sent to ${cleanEmail}`,
       provider: emailResult.provider,
     });
   } catch (error: any) {
