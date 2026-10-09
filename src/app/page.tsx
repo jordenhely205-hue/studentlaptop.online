@@ -122,15 +122,15 @@ export default function Home() {
                     </span>
                   </div>
                   <div className={styles.statBox}>
-                    <span className={styles.statBoxTitle}>JazzCash/EasyPaisa</span>
-                    <span className={styles.statBoxValue} style={{ color: "#0f172a", fontSize: "1rem" }}>
-                      Till: 984703000
-                    </span>
-                  </div>
-                  <div className={styles.statBox}>
                     <span className={styles.statBoxTitle}>Assessment Type</span>
                     <span className={styles.statBoxValue} style={{ color: "#2563eb", fontSize: "0.95rem" }}>
                       Computer Online Test
+                    </span>
+                  </div>
+                  <div className={styles.statBox}>
+                    <span className={styles.statBoxTitle}>Merit Quota</span>
+                    <span className={styles.statBoxValue} style={{ color: "#0f172a", fontSize: "0.95rem" }}>
+                      Honahar Students
                     </span>
                   </div>
                 </div>
@@ -297,9 +297,9 @@ export default function Home() {
                   <div className={styles.iconWrapper}>
                     <CreditCard size={36} color="var(--secondary)" />
                   </div>
-                  <h3>Submit Info & Pay Fee</h3>
+                  <h3>Submit Info & Fee Challan</h3>
                   <p>
-                    Enter your academic details, pay the Rs. 475/- fee via JazzCash/EasyPaisa Till ID 984703000, and upload your TID.
+                    Enter your academic details, generate your official candidate fee challan voucher, and submit payment verification.
                   </p>
                 </div>
               </Link>
@@ -404,8 +404,8 @@ export default function Home() {
                 </li>
                 <li>
                   For support inquiries or verification assistance, email our official helpline:{" "}
-                  <a href="mailto:studentlaptoponline@gmail.com" style={{ color: "var(--primary)", fontWeight: 700 }}>
-                    studentlaptoponline@gmail.com
+                  <a href="mailto:info@studentlaptop.online" style={{ color: "var(--primary)", fontWeight: 700 }}>
+                    info@studentlaptop.online
                   </a>.
                 </li>
               </ul>
@@ -452,8 +452,8 @@ export default function Home() {
             </p>
             <p style={{ marginTop: "0.35rem", fontSize: "0.8rem", color: "#64748b" }}>
               Official Helpline:{" "}
-              <a href="mailto:studentlaptoponline@gmail.com" style={{ color: "#93c5fd" }}>
-                studentlaptoponline@gmail.com
+              <a href="mailto:info@studentlaptop.online" style={{ color: "#93c5fd" }}>
+                info@studentlaptop.online
               </a>
             </p>
           </div>

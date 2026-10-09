@@ -1,13 +1,13 @@
 import nodemailer from "nodemailer";
 
-// Hostinger / Custom Domain SMTP Configuration
-// Configurable via environment variables with direct Hostinger defaults
-const SMTP_HOST = process.env.SMTP_HOST || "smtp.hostinger.com";
+// Zoho Mail Transactional SMTP Configuration (noreply@studentlaptop.online)
+// Configurable via environment variables with direct Zoho Mail production defaults
+const SMTP_HOST = process.env.SMTP_HOST || "smtppro.zoho.com";
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || "465", 10);
 const SMTP_SECURE = SMTP_PORT === 465;
 const SMTP_USER = process.env.SMTP_USER || "noreply@studentlaptop.online";
-const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD || "";
-const SMTP_FROM = process.env.SMTP_FROM || `"STUDENT LAPTOP ONLINE" <${SMTP_USER}>`;
+const SMTP_PASS = process.env.SMTP_PASS || process.env.ZOHO_PASSWORD || process.env.EMAIL_PASSWORD || "";
+const SMTP_FROM = process.env.SMTP_FROM || `"STUDENT LAPTOP ONLINE" <noreply@studentlaptop.online>`;
 
 export function getTransporter() {
   if (!SMTP_PASS) {
@@ -17,7 +17,7 @@ export function getTransporter() {
   return nodemailer.createTransport({
     host: SMTP_HOST,
     port: SMTP_PORT,
-    secure: SMTP_SECURE,
+    secure: SMTP_SECURE, // true for 465 SSL
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
@@ -74,7 +74,7 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
         </div>
         <div class="footer">
           &copy; 2026 STUDENT LAPTOP ONLINE. All Rights Reserved.<br>
-          Official Portal: <a href="https://www.studentlaptop.online" style="color: #3b82f6; text-decoration: none;">www.studentlaptop.online</a>
+          Official Portal: <a href="https://www.studentlaptop.online" style="color: #3b82f6; text-decoration: none;">www.studentlaptop.online</a> &bull; Support: <a href="mailto:info@studentlaptop.online" style="color: #3b82f6; text-decoration: none;">info@studentlaptop.online</a>
         </div>
       </div>
     </body>

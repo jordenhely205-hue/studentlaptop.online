@@ -44,7 +44,7 @@ export default function FaqsPage() {
                 2. What is the application processing fee and how do I pay?
               </h3>
               <p style={{ color: "#475569", lineHeight: 1.6, margin: 0 }}>
-                The application processing fee is <strong>Rs. 475/- (Four Hundred Seventy Five Rupees Only)</strong>. You can pay via JazzCash or EasyPaisa using Merchant Till ID: <strong>984703000</strong> or by scanning the official QR code available on the payment challan page.
+                The application processing fee is <strong>Rs. 475/- (Four Hundred Seventy Five Rupees Only)</strong>. Complete payment instructions, merchant Till ID, and official QR scanner are provided on your personalized printable Challan Voucher upon completing the online registration form.
               </p>
             </div>
 
@@ -71,7 +71,7 @@ export default function FaqsPage() {
                 5. What if I entered incorrect academic details?
               </h3>
               <p style={{ color: "#475569", lineHeight: 1.6, margin: 0 }}>
-                Providing inaccurate data may cause application disqualification. If you made an error during registration, please contact our support team immediately at: <a href="mailto:studentlaptoponline@gmail.com" style={{ color: "var(--primary)", fontWeight: 600 }}>studentlaptoponline@gmail.com</a>.
+                Providing inaccurate data may cause application disqualification. If you made an error during registration, please contact our support team immediately at: <a href="mailto:info@studentlaptop.online" style={{ color: "var(--primary)", fontWeight: 600 }}>info@studentlaptop.online</a>.
               </p>
             </div>
           </div>
