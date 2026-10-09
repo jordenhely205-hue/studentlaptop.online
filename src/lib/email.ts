@@ -1,11 +1,29 @@
 import nodemailer from "nodemailer";
 
-// Zoho Mail Transactional SMTP Configuration (noreply@studentlaptop.online)
-// Configurable via environment variables with robust fallback resolution
-export function getSmtpConfig() {
-  const host = (process.env.SMTP_HOST || "smtppro.zoho.com").trim();
-  const port = parseInt(process.env.SMTP_PORT || "465", 10);
-  const secure = port === 465;
+// Diagnostic and Credentials Resolver for Zoho Mail & Transactional SMTP
+export function resolveSmtpCredentials() {
+  const envCandidates = [
+    { key: "SMTP_PASS", val: process.env.SMTP_PASS },
+    { key: "SMTP_PASSWORD", val: process.env.SMTP_PASSWORD },
+    { key: "ZOHO_PASSWORD", val: process.env.ZOHO_PASSWORD },
+    { key: "ZOHO_PASS", val: process.env.ZOHO_PASS },
+    { key: "ZOHO_APP_PASSWORD", val: process.env.ZOHO_APP_PASSWORD },
+    { key: "APP_PASSWORD", val: process.env.APP_PASSWORD },
+    { key: "EMAIL_PASSWORD", val: process.env.EMAIL_PASSWORD },
+    { key: "EMAIL_PASS", val: process.env.EMAIL_PASS },
+    { key: "MAIL_PASSWORD", val: process.env.MAIL_PASSWORD },
+    { key: "NOREPLY_PASSWORD", val: process.env.NOREPLY_PASSWORD },
+  ];
+
+  const matched = envCandidates.find((c) => c.val && c.val.trim().length > 0);
+  const rawPass = matched ? matched.val!.trim() : "";
+  const matchedKey = matched ? matched.key : "none";
+
+  // Handle surrounding quotes (e.g. "pass" or 'pass')
+  const passNoQuotes = rawPass.replace(/^["']|["']$/g, "").trim();
+  // Handle Zoho App Password spaces (Zoho generates app passwords like "xxxx xxxx xxxx xxxx")
+  const passNoSpaces = passNoQuotes.replace(/\s+/g, "");
+
   const user = (
     process.env.SMTP_USER ||
     process.env.SMTP_USERNAME ||
@@ -13,57 +31,42 @@ export function getSmtpConfig() {
     process.env.EMAIL_USER ||
     "noreply@studentlaptop.online"
   ).trim();
-  const pass = (
-    process.env.SMTP_PASS ||
-    process.env.SMTP_PASSWORD ||
-    process.env.ZOHO_PASSWORD ||
-    process.env.ZOHO_PASS ||
-    process.env.EMAIL_PASSWORD ||
-    process.env.MAIL_PASSWORD ||
-    ""
+
+  const host = (
+    process.env.SMTP_HOST ||
+    process.env.ZOHO_HOST ||
+    "smtppro.zoho.com"
   ).trim();
+
+  const port = parseInt(process.env.SMTP_PORT || "465", 10);
   const from = (
     process.env.SMTP_FROM ||
     `"STUDENT LAPTOP ONLINE" <${user}>`
   ).trim();
 
-  return { host, port, secure, user, pass, from };
-}
+  const maskedPass =
+    rawPass.length > 4
+      ? `${rawPass.slice(0, 2)}****${rawPass.slice(-2)} (${rawPass.length} chars)`
+      : rawPass.length > 0
+      ? "****"
+      : "MISSING";
 
-export function getTransporter() {
-  const { host, port, secure, user, pass } = getSmtpConfig();
-
-  if (!pass) {
-    console.error(
-      "[Zoho SMTP] ERROR: SMTP password is not set! Please define SMTP_PASS or ZOHO_PASSWORD in your environment variables."
-    );
-    return null;
-  }
-
-  return nodemailer.createTransport({
+  return {
+    rawPass,
+    passNoQuotes,
+    passNoSpaces,
+    matchedKey,
+    maskedPass,
+    user,
     host,
     port,
-    secure, // true for 465 SSL
-    auth: {
-      user,
-      pass,
-    },
-    connectionTimeout: 10000, // 10s connection timeout for serverless
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-    tls: {
-      rejectUnauthorized: false, // Prevents SSL handshaking rejection in proxy/serverless environments
-    },
-    debug: process.env.NODE_ENV !== "production" || process.env.SMTP_DEBUG === "true",
-    logger: false,
-    headers: {
-      "X-Entity-Ref-ID": `SLO-${Date.now()}`,
-    },
-  });
+    from,
+  };
 }
 
 export async function sendOtpEmail(toEmail: string, studentName: string, otpCode: string) {
-  const { from, host, port, user, pass } = getSmtpConfig();
+  const creds = resolveSmtpCredentials();
+  const { from, host, user, passNoSpaces, passNoQuotes, rawPass, matchedKey, maskedPass } = creds;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -118,7 +121,7 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
 
   const textContent = `Dear ${studentName || "Applicant"},\n\nYour OTP Verification Code for STUDENT LAPTOP ONLINE is: ${otpCode}\n\nThis code is valid for 10 minutes. Do not share it with anyone.\n\nWebsite: https://www.studentlaptop.online\nSupport: info@studentlaptop.online`;
 
-  // 1. Try Resend API if RESEND_API_KEY is configured
+  // 1. Try Resend API if configured
   if (process.env.RESEND_API_KEY) {
     try {
       const res = await fetch("https://api.resend.com/emails", {
@@ -147,10 +150,112 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
     }
   }
 
-  // 2. Send via Zoho Mail SMTP (smtppro.zoho.com:465)
-  const transporter = getTransporter();
-  if (transporter) {
+  if (!rawPass) {
+    console.error(
+      "[Zoho SMTP] ERROR: No SMTP password found in environment variables (checked SMTP_PASS, SMTP_PASSWORD, ZOHO_PASSWORD, ZOHO_PASS, ZOHO_APP_PASSWORD)."
+    );
+    return {
+      success: false,
+      error: "SMTP credentials not configured on server (SMTP_PASS missing).",
+      provider: "none",
+      debug: {
+        matchedKey,
+        maskedPass,
+        user,
+        host,
+      },
+    };
+  }
+
+  // 2. Multi-Candidate Zoho SMTP Engine
+  // Attempts configurations in priority order:
+  // (a) Configured host on Port 465 SSL with spaceless password
+  // (b) Configured host on Port 465 SSL with unstripped password (if different)
+  // (c) Fallback host smtp.zoho.com on Port 465 SSL (standard Zoho custom domains)
+  // (d) Configured host on Port 587 STARTTLS
+  // (e) Fallback host smtp.zoho.com on Port 587 STARTTLS
+  const candidateTargets: Array<{
+    name: string;
+    host: string;
+    port: number;
+    secure: boolean;
+    pass: string;
+  }> = [];
+
+  // Candidate 1: Primary 465 SSL (spaceless pass)
+  candidateTargets.push({
+    name: `${host}:465 (SSL, no-spaces)`,
+    host,
+    port: 465,
+    secure: true,
+    pass: passNoSpaces,
+  });
+
+  // Candidate 2: Primary 465 SSL with unstripped spaces if pass has spaces
+  if (passNoQuotes !== passNoSpaces) {
+    candidateTargets.push({
+      name: `${host}:465 (SSL, with-spaces)`,
+      host,
+      port: 465,
+      secure: true,
+      pass: passNoQuotes,
+    });
+  }
+
+  // Candidate 3: Alternative Zoho host smtp.zoho.com (for non-Workplace domain accounts)
+  if (host !== "smtp.zoho.com") {
+    candidateTargets.push({
+      name: "smtp.zoho.com:465 (SSL)",
+      host: "smtp.zoho.com",
+      port: 465,
+      secure: true,
+      pass: passNoSpaces,
+    });
+  }
+
+  // Candidate 4: Primary host on 587 STARTTLS
+  candidateTargets.push({
+    name: `${host}:587 (TLS)`,
+    host,
+    port: 587,
+    secure: false,
+    pass: passNoSpaces,
+  });
+
+  // Candidate 5: smtp.zoho.com on 587 STARTTLS
+  if (host !== "smtp.zoho.com") {
+    candidateTargets.push({
+      name: "smtp.zoho.com:587 (TLS)",
+      host: "smtp.zoho.com",
+      port: 587,
+      secure: false,
+      pass: passNoSpaces,
+    });
+  }
+
+  const errors: string[] = [];
+
+  for (const target of candidateTargets) {
     try {
+      const transporter = nodemailer.createTransport({
+        host: target.host,
+        port: target.port,
+        secure: target.secure,
+        auth: {
+          user,
+          pass: target.pass,
+        },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
+        tls: {
+          rejectUnauthorized: false,
+        },
+        headers: {
+          "X-Entity-Ref-ID": `SLO-${Date.now()}`,
+        },
+      });
+
       const info = await transporter.sendMail({
         from,
         to: toEmail,
@@ -162,34 +267,51 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
           Importance: "high",
         },
       });
-      console.log(`[Zoho SMTP] Successfully sent OTP to ${toEmail}. MessageId: ${info.messageId}`);
-      return { success: true, provider: "smtp", messageId: info.messageId };
-    } catch (smtpErr: any) {
-      console.error("[Zoho SMTP Error] Failed to send email:", {
-        host,
-        port,
-        user,
-        recipient: toEmail,
-        code: smtpErr?.code,
-        command: smtpErr?.command,
-        response: smtpErr?.response,
-        message: smtpErr?.message,
-      });
+
+      console.log(
+        `[Zoho SMTP Success] Dispatched OTP to ${toEmail} via ${target.name}. MessageId: ${info.messageId}`
+      );
+
       return {
-        success: false,
-        error: smtpErr?.message || "Zoho SMTP dispatch failed",
+        success: true,
         provider: "smtp",
+        target: target.name,
+        messageId: info.messageId,
       };
+    } catch (err: any) {
+      const errMsg = err?.message || String(err);
+      console.warn(`[Zoho SMTP Attempt Failed] ${target.name}: ${errMsg}`);
+      errors.push(`${target.name}: ${errMsg}`);
+      
+      // If error is not authentication-related (e.g. rate limit or invalid recipient), don't keep hammering
+      if (err?.code === "EENVELOPE" || err?.responseCode === 550) {
+        break;
+      }
     }
   }
 
-  // 3. Fallback when SMTP_PASS is missing
-  console.warn(
-    `[Zoho SMTP Not Configured] SMTP password is missing. Could not deliver OTP email to ${toEmail}.`
-  );
+  const primaryError = errors[0] || "Zoho SMTP dispatch failed";
+
+  console.error("[Zoho SMTP All Candidates Failed]:", {
+    user,
+    matchedKey,
+    maskedPass,
+    errors,
+  });
+
   return {
     success: false,
-    error: "SMTP credentials not configured on server (SMTP_PASS missing).",
-    provider: "none",
+    error: primaryError,
+    provider: "smtp",
+    attempts: errors,
+    debug: {
+      user,
+      host,
+      matchedKey,
+      maskedPass,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      guidance:
+        "If you see '535 Authentication Failed': 1) In Zoho Accounts (accounts.zoho.com) -> Security -> App Passwords, generate a 16-character App Password and set it as SMTP_PASS in Vercel. 2) In Zoho Mail (mailadmin.zoho.com) -> Users -> noreply@studentlaptop.online -> Mail Settings, verify 'SMTP Access' is enabled.",
+    },
   };
 }

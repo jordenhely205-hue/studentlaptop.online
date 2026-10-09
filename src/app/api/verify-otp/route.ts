@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const NEON_DB_URL =
-  process.env.DATABASE_URL ||
-  "postgresql://neondb_owner:npg_eHSVu1qzQB8y@ep-fragrant-wildflower-b4ypwttw-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+function getDatabaseUrl() {
+  return (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.NEON_DATABASE_URL ||
+    "postgresql://neondb_owner:npg_eHSVu1qzQB8y@ep-fragrant-wildflower-b4ypwttw-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  ).trim();
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,9 +30,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Query Neon PostgreSQL for matching OTP
+    const dbUrl = getDatabaseUrl();
     try {
       const postgres = (await import("postgres")).default;
-      const sql = postgres(NEON_DB_URL, { ssl: "require", max: 1 });
+      const sql = postgres(dbUrl, { ssl: "require", max: 1 });
 
       const records = await sql`
         SELECT "id", "otp", "expiresAt" 
@@ -53,10 +59,10 @@ export async function POST(request: NextRequest) {
           );
         }
       }
-    } catch (dbErr) {
+    } catch (dbErr: any) {
       console.error("Neon DB query for OTP verification failed:", dbErr);
       return NextResponse.json(
-        { error: "Database error during OTP verification. Please try again." },
+        { error: "Database error during OTP verification.", details: dbErr?.message },
         { status: 500 }
       );
     }

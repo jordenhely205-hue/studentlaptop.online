@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const NEON_DB_URL =
-  process.env.DATABASE_URL ||
-  "postgresql://neondb_owner:npg_eHSVu1qzQB8y@ep-fragrant-wildflower-b4ypwttw-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+function getDatabaseUrl() {
+  return (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.NEON_DATABASE_URL ||
+    "postgresql://neondb_owner:npg_eHSVu1qzQB8y@ep-fragrant-wildflower-b4ypwttw-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  ).trim();
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,7 +64,8 @@ export async function POST(request: NextRequest) {
 
     try {
       const postgres = (await import("postgres")).default;
-      const sql = postgres(NEON_DB_URL, { ssl: "require", max: 1 });
+      const dbUrl = getDatabaseUrl();
+      const sql = postgres(dbUrl, { ssl: "require", max: 1 });
 
       // 1. Strict Duplicate CNIC Check
       const existing = await sql`
