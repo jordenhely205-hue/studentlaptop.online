@@ -16,14 +16,25 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "STUDENT LAPTOP ONLINE",
   description: "Official Online Application Portal for Student Laptop Online. Honahar Students Laptop Scheme based on Merit & Online Test.",
-  metadataBase: new URL("https://studentlaptop.online"),
+  metadataBase: new URL("https://www.studentlaptop.online"),
   alternates: {
-    canonical: "/",
+    canonical: "https://www.studentlaptop.online",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   openGraph: {
     title: "STUDENT LAPTOP ONLINE",
     description: "Official Online Application Portal for Student Laptop Online. Honahar Students Laptop Scheme based on Merit & Online Test.",
-    url: "https://studentlaptop.online",
+    url: "https://www.studentlaptop.online",
     siteName: "STUDENT LAPTOP ONLINE",
     type: "website",
     images: [
