@@ -6,10 +6,10 @@ export default function WarrantyPage() {
     <div style={{minHeight: "100vh", backgroundColor: "#f8fafc"}}>
       <header className={styles.header}>
         <div className="container" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-          <div className={styles.logo}>
-            <span style={{color: "var(--primary)", fontWeight: "bold", fontSize: "1.5rem"}}>StudentLaptop</span>
-            <span style={{color: "var(--secondary)", fontWeight: "bold", fontSize: "1.5rem"}}>.online</span>
-          </div>
+          <Link href="/" style={{display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none"}}>
+            <img src="/logo.png" alt="STUDENT LAPTOP ONLINE" width={42} height={42} style={{objectFit: "contain"}} />
+            <span style={{color: "var(--primary)", fontWeight: 800, fontSize: "1.35rem", letterSpacing: "0.5px"}}>STUDENT LAPTOP ONLINE</span>
+          </Link>
           <Link href="/" className="btn btn-secondary">Back to Home</Link>
         </div>
       </header>

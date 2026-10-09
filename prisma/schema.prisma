@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model InstituteDataset {
+  id        String   @id @default(cuid())
+  name      String
+  city      String?
+  province  String?
+  type      String   // Board, School, College, University
+  createdAt DateTime @default(now())
+
+  @@index([name])
+  @@index([city])
+  @@index([province])
+  @@index([type])
+  @@map("institute_datasets")
+}
+
+model CandidateApplication {
+  id            String   @id @default(cuid())
+  cnic          String   @unique
+  fullName      String
+  fatherName    String
+  email         String
+  phone         String
+  level         String
+  instituteName String
+  boardName     String
+  rollNumber    String
+  passingYear   String
+  totalMarks    String
+  obtainedMarks String
+  percentage    String
+  feeAmount     Int      @default(475)
+  tillId        String   @default("984703000")
+  tid           String?
+  receiptUrl    String?
+  status        String   @default("Payment Pending")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+}

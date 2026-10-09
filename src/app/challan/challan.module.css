@@ -172,15 +172,50 @@
   width: 150px;
 }
 
-@media print {
-  .pageHeader {
-    display: none;
+@media (max-width: 768px) {
+  .detailsSplit {
+    flex-direction: column;
+    padding: 0.75rem;
   }
-  .wrapper {
-    background-color: white;
+  .feeBlock {
+    min-width: 100%;
+  }
+  .tillBox {
+    align-self: stretch;
+    text-align: center;
+  }
+  .footerSplit {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+  .signatures {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  .sigLine {
+    width: 100%;
   }
   .printArea {
-    box-shadow: none;
-    padding: 0;
+    padding: 0.75rem;
+  }
+}
+
+@media print {
+  .pageHeader {
+    display: none !important;
+  }
+  .wrapper {
+    background-color: white !important;
+  }
+  .printArea {
+    box-shadow: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    background-color: #f7f5e8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

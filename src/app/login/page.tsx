@@ -42,11 +42,11 @@ export default function LoginPage() {
   return (
     <div style={{minHeight: "100vh", backgroundColor: "#f8fafc", display: "flex", flexDirection: "column"}}>
       <header style={{padding: "1rem 0", backgroundColor: "#ffffff", borderBottom: "1px solid #e2e8f0"}}>
-        <div className="container" style={{display: "flex", justifyContent: "space-between"}}>
-           <div style={{display: "flex", alignItems: "center"}}>
-             <span style={{color: "var(--primary)", fontWeight: "bold", fontSize: "1.5rem"}}>StudentLaptop</span>
-             <span style={{color: "var(--secondary)", fontWeight: "bold", fontSize: "1.5rem"}}>.online</span>
-           </div>
+        <div className="container" style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+           <Link href="/" style={{display: "flex", alignItems: "center", gap: "0.75rem", textDecoration: "none"}}>
+             <img src="/logo.png" alt="STUDENT LAPTOP ONLINE" width={40} height={40} style={{objectFit: "contain"}} />
+             <span style={{color: "var(--primary)", fontWeight: 800, fontSize: "1.35rem", letterSpacing: "0.5px"}}>STUDENT LAPTOP ONLINE</span>
+           </Link>
            <Link href="/" style={{color: "var(--foreground)", textDecoration: "none", fontWeight: "500"}}>Home</Link>
         </div>
       </header>

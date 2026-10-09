@@ -14,8 +14,33 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StudentLaptop.online - Prime Minister Youth Laptop Scheme",
-  description: "Register for the National Student Laptop Scheme. Check eligibility, apply online, and empower your digital learning.",
+  title: "STUDENT LAPTOP ONLINE",
+  description: "Official Online Application Portal for Student Laptop Online. Honahar Students Laptop Scheme based on Merit & Online Test.",
+  metadataBase: new URL("https://studentlaptop.online"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "STUDENT LAPTOP ONLINE",
+    description: "Official Online Application Portal for Student Laptop Online. Honahar Students Laptop Scheme based on Merit & Online Test.",
+    url: "https://studentlaptop.online",
+    siteName: "STUDENT LAPTOP ONLINE",
+    type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 800,
+        height: 800,
+        alt: "STUDENT LAPTOP ONLINE",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "STUDENT LAPTOP ONLINE",
+    description: "Official Online Application Portal for Student Laptop Online. Honahar Students Laptop Scheme based on Merit & Online Test.",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({

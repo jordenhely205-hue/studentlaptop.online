@@ -10,7 +10,7 @@ export default function AnnouncementBanner() {
     >
       <Megaphone className={styles.icon} size={18} strokeWidth={2.5} />
       <span style={{ color: "#ffffff", fontWeight: 700 }}>
-        <strong style={{ fontWeight: 700 }}>Important Notice:</strong> Online Registration for Student Laptop Scheme 2026 is open from <strong style={{ fontWeight: 700 }}>01st September 2026</strong>. Last date to apply is <strong style={{ fontWeight: 700 }}>15th September 2026</strong>. Apply as soon as possible!
+        Application is Open! Last Date to Apply: 25 October 2026. Apply now for Student Laptop Online.
       </span>
     </div>
   );
