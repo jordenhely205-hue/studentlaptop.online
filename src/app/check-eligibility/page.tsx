@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./eligibility.module.css";
 import { ArrowRight, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import Footer from "@/components/Footer";
 
 export default function CheckEligibility() {
   const [cnic, setCnic] = useState("");
@@ -143,6 +144,7 @@ export default function CheckEligibility() {
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

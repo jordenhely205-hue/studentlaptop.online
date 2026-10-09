@@ -15,6 +15,7 @@ import {
   Clock,
   ArrowRight,
 } from "lucide-react";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -415,50 +416,7 @@ export default function Home() {
       </main>
 
       {/* FOOTER */}
-      <footer className={styles.footer}>
-        <div className="container">
-          <div className={styles.footerContent}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
-                <Image
-                  src="/logo.png"
-                  alt="STUDENT LAPTOP ONLINE"
-                  width={38}
-                  height={38}
-                  style={{ objectFit: "contain" }}
-                />
-                <span style={{ color: "#ffffff", fontWeight: 800, fontSize: "1.2rem", letterSpacing: "0.5px" }}>
-                  STUDENT LAPTOP ONLINE
-                </span>
-              </div>
-              <p style={{ color: "#64748b", fontSize: "0.875rem", margin: 0, maxWidth: "400px" }}>
-                Honahar Students Scholarship & Laptop Scheme based on Merit & Online Test.
-              </p>
-            </div>
-
-            <div className={styles.footerLinks}>
-              <Link href="/">Home</Link>
-              <Link href="#online-test">Online Test</Link>
-              <Link href="/check-eligibility">Check Eligibility</Link>
-              <Link href="/register">Apply Online</Link>
-              <Link href="/faqs">FAQs</Link>
-              <Link href="/login">Login Tracker</Link>
-            </div>
-          </div>
-
-          <div className={styles.footerBottom}>
-            <p style={{ margin: 0 }}>
-              &copy; 2026 STUDENT LAPTOP ONLINE. All Rights Reserved.
-            </p>
-            <p style={{ marginTop: "0.35rem", fontSize: "0.8rem", color: "#64748b" }}>
-              Official Helpline:{" "}
-              <a href="mailto:info@studentlaptop.online" style={{ color: "#93c5fd" }}>
-                info@studentlaptop.online
-              </a>
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import styles from "../page.module.css";
+import Footer from "@/components/Footer";
 
 const punjabData: Record<string, string[]> = {
   "Attock": ["Attock", "Fateh Jang", "Hassan Abdal", "Hazro", "Jand", "Pindi Gheb"],
@@ -205,6 +206,7 @@ export default function EligibleInstitutesPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
