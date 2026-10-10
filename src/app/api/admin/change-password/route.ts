@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
       LIMIT 1
     `;
 
-    const storedPass = admin ? admin.password : "admin123";
+    const defaultPass = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD || "admin123";
+    const storedPass = admin ? admin.password : defaultPass;
 
     if (currentPassword !== storedPass) {
       await sql.end({ timeout: 2 });

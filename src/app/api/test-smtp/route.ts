@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveSmtpCredentials, sendOtpEmail } from "@/lib/email";
-
-function getDatabaseUrl() {
-  return (
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_URL ||
-    process.env.NEON_DATABASE_URL ||
-    ""
-  ).trim();
-}
+import { getDatabaseUrl } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   return handleDiagnostic(request);
@@ -75,11 +67,7 @@ async function handleDiagnostic(request: NextRequest) {
         user: creds.user,
         configuredHost: creds.host,
         configuredPort: creds.port,
-        matchedPasswordEnvKey: creds.matchedKey,
-        passwordMasked: creds.maskedPass,
-        hasPassword: !!creds.rawPass,
-        passwordRawLength: creds.rawPass.length,
-        passwordNoSpacesLength: creds.passNoSpaces.length,
+        isConfigured: creds.isConfigured,
       },
     },
     testDispatch: dispatchResult

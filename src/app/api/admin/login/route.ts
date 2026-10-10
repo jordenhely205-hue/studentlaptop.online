@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
 
       await sql.end({ timeout: 2 });
 
-      const expectedPassword = admin ? admin.password : "admin123";
+      const defaultPass = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD || "admin123";
+      const expectedPassword = admin ? admin.password : defaultPass;
 
       if (password === expectedPassword) {
         return NextResponse.json({

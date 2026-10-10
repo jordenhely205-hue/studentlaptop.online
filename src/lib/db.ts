@@ -5,12 +5,17 @@ export function getDatabaseUrl() {
     process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
     process.env.NEON_DATABASE_URL ||
-    "postgresql://neondb_owner:npg_eHSVu1qzQB8y@ep-fragrant-wildflower-b4ypwttw-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+    ""
   ).trim();
 }
 
 export function getDb() {
   const url = getDatabaseUrl();
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL is not configured. Please set DATABASE_URL in Vercel Project Settings."
+    );
+  }
   return postgres(url, {
     ssl: "require",
     max: 1,
@@ -42,9 +47,10 @@ export async function ensureAdminTables(sql: ReturnType<typeof postgres>) {
     `;
 
     // Seed default admin if missing
+    const defaultAdminPass = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_PASSWORD || "admin123";
     await sql`
       INSERT INTO "admin_users" ("id", "email", "password", "name", "role")
-      VALUES ('admin_root', 'admin@studentlaptop.online', 'admin123', 'Super Administrator', 'superadmin')
+      VALUES ('admin_root', 'admin@studentlaptop.online', ${defaultAdminPass}, 'Super Administrator', 'superadmin')
       ON CONFLICT ("email") DO NOTHING
     `;
 

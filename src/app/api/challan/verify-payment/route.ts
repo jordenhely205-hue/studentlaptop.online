@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const NEON_DB_URL =
-  process.env.DATABASE_URL ||
-  "postgresql://neondb_owner:npg_eHSVu1qzQB8y@ep-fragrant-wildflower-b4ypwttw-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+import { getDatabaseUrl } from "@/lib/db";
+import postgres from "postgres";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,8 +20,8 @@ export async function POST(request: NextRequest) {
     const now = new Date();
 
     try {
-      const postgres = (await import("postgres")).default;
-      const sql = postgres(NEON_DB_URL, { ssl: "require", max: 1 });
+      const dbUrl = getDatabaseUrl();
+      const sql = postgres(dbUrl, { ssl: "require", max: 1 });
 
       let studentRow = null;
       if (cleanCnic) {

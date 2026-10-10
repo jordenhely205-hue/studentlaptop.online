@@ -51,21 +51,9 @@ export default function LoginPage() {
           setError(data.error || "Invalid admin credentials.");
           return;
         }
-      } catch {
-        // Fallback check
-        if (formData.password === "admin123") {
-          if (typeof window !== "undefined") {
-            localStorage.setItem(
-              "adminUser",
-              JSON.stringify({ email: "admin@studentlaptop.online", loggedInAt: Date.now() })
-            );
-          }
-          setLoading(false);
-          router.push("/admin");
-          return;
-        }
+      } catch (err: any) {
         setLoading(false);
-        setError("Failed to authenticate admin. Please verify password.");
+        setError("Unable to authenticate. Please check network connection and try again.");
         return;
       }
     }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getDatabaseUrl } from "@/lib/db";
 
 // Comprehensive fallback dataset of Examination Boards across Pakistan
 export const BOARDS_DATASET = [
@@ -115,10 +116,6 @@ export const INSTITUTES_DATASET = [
   "Other / Unlisted Institute or College",
 ];
 
-const NEON_DB_URL =
-  process.env.DATABASE_URL ||
-  "postgresql://neondb_owner:npg_eHSVu1qzQB8y@ep-fragrant-wildflower-b4ypwttw-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -128,7 +125,8 @@ export async function GET(request: NextRequest) {
     // Query institute_datasets in Neon Postgres
     try {
       const postgres = (await import("postgres")).default;
-      const sql = postgres(NEON_DB_URL, { ssl: "require", max: 1 });
+      const dbUrl = getDatabaseUrl();
+      const sql = postgres(dbUrl, { ssl: "require", max: 1 });
 
       let rows: any[] = [];
       if (type === "board") {

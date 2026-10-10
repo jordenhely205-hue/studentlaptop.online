@@ -1,23 +1,14 @@
 import nodemailer from "nodemailer";
 
-// Diagnostic and Credentials Resolver for Zoho Mail & Transactional SMTP
+// Credentials Resolver for Zoho Mail Transactional SMTP (strictly from environment)
 export function resolveSmtpCredentials() {
-  const envCandidates = [
-    { key: "SMTP_PASS", val: process.env.SMTP_PASS },
-    { key: "SMTP_PASSWORD", val: process.env.SMTP_PASSWORD },
-    { key: "ZOHO_PASSWORD", val: process.env.ZOHO_PASSWORD },
-    { key: "ZOHO_PASS", val: process.env.ZOHO_PASS },
-    { key: "ZOHO_APP_PASSWORD", val: process.env.ZOHO_APP_PASSWORD },
-    { key: "APP_PASSWORD", val: process.env.APP_PASSWORD },
-    { key: "EMAIL_PASSWORD", val: process.env.EMAIL_PASSWORD },
-    { key: "EMAIL_PASS", val: process.env.EMAIL_PASS },
-    { key: "MAIL_PASSWORD", val: process.env.MAIL_PASSWORD },
-    { key: "NOREPLY_PASSWORD", val: process.env.NOREPLY_PASSWORD },
-  ];
-
-  const matched = envCandidates.find((c) => c.val && c.val.trim().length > 0);
-  const rawPass = matched ? matched.val!.trim() : "";
-  const matchedKey = matched ? matched.key : "none";
+  const rawPass = (
+    process.env.SMTP_PASS ||
+    process.env.SMTP_PASSWORD ||
+    process.env.ZOHO_PASSWORD ||
+    process.env.EMAIL_PASSWORD ||
+    ""
+  ).trim();
 
   // Handle surrounding quotes (e.g. "pass" or 'pass')
   const passNoQuotes = rawPass.replace(/^["']|["']$/g, "").trim();
@@ -44,19 +35,13 @@ export function resolveSmtpCredentials() {
     `"STUDENT LAPTOP ONLINE" <${user}>`
   ).trim();
 
-  const maskedPass =
-    rawPass.length > 4
-      ? `${rawPass.slice(0, 2)}****${rawPass.slice(-2)} (${rawPass.length} chars)`
-      : rawPass.length > 0
-      ? "****"
-      : "MISSING";
+  const isConfigured = !!passNoSpaces;
 
   return {
     rawPass,
     passNoQuotes,
     passNoSpaces,
-    matchedKey,
-    maskedPass,
+    isConfigured,
     user,
     host,
     port,
@@ -66,7 +51,7 @@ export function resolveSmtpCredentials() {
 
 export async function sendOtpEmail(toEmail: string, studentName: string, otpCode: string) {
   const creds = resolveSmtpCredentials();
-  const { from, host, user, passNoSpaces, passNoQuotes, rawPass, matchedKey, maskedPass } = creds;
+  const { from, host, user, passNoSpaces, passNoQuotes, rawPass, isConfigured } = creds;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -152,17 +137,16 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
 
   if (!rawPass) {
     console.error(
-      "[Zoho SMTP] ERROR: No SMTP password found in environment variables (checked SMTP_PASS, SMTP_PASSWORD, ZOHO_PASSWORD, ZOHO_PASS, ZOHO_APP_PASSWORD)."
+      "[Zoho SMTP] ERROR: No SMTP password found in environment variables (SMTP_PASS is required)."
     );
     return {
       success: false,
       error: "SMTP credentials not configured on server (SMTP_PASS missing).",
       provider: "none",
       debug: {
-        matchedKey,
-        maskedPass,
         user,
         host,
+        configured: false,
       },
     };
   }
@@ -294,8 +278,7 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
 
   console.error("[Zoho SMTP All Candidates Failed]:", {
     user,
-    matchedKey,
-    maskedPass,
+    configured: !!passNoSpaces,
     errors,
   });
 
@@ -307,8 +290,7 @@ export async function sendOtpEmail(toEmail: string, studentName: string, otpCode
     debug: {
       user,
       host,
-      matchedKey,
-      maskedPass,
+      configured: !!passNoSpaces,
       hasDatabaseUrl: !!process.env.DATABASE_URL,
       guidance:
         "If you see '535 Authentication Failed': 1) In Zoho Accounts (accounts.zoho.com) -> Security -> App Passwords, generate a 16-character App Password and set it as SMTP_PASS in Vercel. 2) In Zoho Mail (mailadmin.zoho.com) -> Users -> noreply@studentlaptop.online -> Mail Settings, verify 'SMTP Access' is enabled.",
