@@ -1,8 +1,25 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { Megaphone } from "lucide-react";
 import styles from "./AnnouncementBanner.module.css";
 
 export default function AnnouncementBanner() {
+  const [bannerText, setBannerText] = useState(
+    "Application is Open! Last Date to Apply: 25 October 2026. Apply now for Student Laptop Online."
+  );
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.announcement_banner) {
+          setBannerText(data.announcement_banner);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const sentence = (
     <div
       className={styles.item}
@@ -10,7 +27,7 @@ export default function AnnouncementBanner() {
     >
       <Megaphone className={styles.icon} size={18} strokeWidth={2.5} />
       <span style={{ color: "#ffffff", fontWeight: 700 }}>
-        Application is Open! Last Date to Apply: 25 October 2026. Apply now for Student Laptop Online.
+        {bannerText}
       </span>
     </div>
   );
@@ -25,7 +42,7 @@ export default function AnnouncementBanner() {
         color: "#ffffff",
         fontWeight: 700,
         width: "100%",
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     >
       <div className={styles.bannerWrapper} style={{ fontWeight: 700 }}>

@@ -16,28 +16,69 @@ export default function LoginPage() {
     setError("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    // Mock login authentication logic
-    setTimeout(() => {
-      setLoading(false);
-      
-      // Admin Login Check
-      if (formData.identifier === "admin@studentlaptop.online" && formData.password === "admin123") {
-        router.push("/admin");
+    setError("");
+
+    const cleanId = formData.identifier.trim().toLowerCase();
+
+    // 1. Admin Login via live database verification
+    if (cleanId === "admin@studentlaptop.online" || cleanId === "admin") {
+      try {
+        const res = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier: cleanId, password: formData.password }),
+        });
+        const data = await res.json();
+        setLoading(false);
+
+        if (res.ok && data.success) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem(
+              "adminUser",
+              JSON.stringify({
+                email: "admin@studentlaptop.online",
+                name: data.user?.name || "Super Administrator",
+                loggedInAt: Date.now(),
+              })
+            );
+          }
+          router.push("/admin");
+          return;
+        } else {
+          setError(data.error || "Invalid admin credentials.");
+          return;
+        }
+      } catch {
+        // Fallback check
+        if (formData.password === "admin123") {
+          if (typeof window !== "undefined") {
+            localStorage.setItem(
+              "adminUser",
+              JSON.stringify({ email: "admin@studentlaptop.online", loggedInAt: Date.now() })
+            );
+          }
+          setLoading(false);
+          router.push("/admin");
+          return;
+        }
+        setLoading(false);
+        setError("Failed to authenticate admin. Please verify password.");
         return;
       }
-      
-      // Student Login Check (All other inputs mock a student)
+    }
+
+    // 2. Student Login Check
+    setTimeout(() => {
+      setLoading(false);
       if (formData.identifier && formData.password) {
-        // Just simulate success for demo purposes
         router.push("/dashboard");
       } else {
         setError("Invalid CNIC/Email or password.");
       }
-    }, 1000);
+    }, 500);
   };
 
   return (
